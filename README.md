@@ -64,8 +64,18 @@ the `@TestPulse` case keys declared on the *calling class's own methods*
 and rejects the call otherwise, so a test can't accidentally (or
 otherwise) attach evidence under a case key that isn't its own. Only
 `image/png`, `image/jpeg`, and `image/webp` are accepted. Calling
-`attach()` multiple times under the same case key (e.g. from a
-`@ParameterizedTest`) keeps every attachment — none get overwritten.
+`attach()` multiple times under the same case key keeps every attachment
+locally — none get overwritten or lost to a race.
+
+**This does not currently apply to `@ParameterizedTest` invocations end to
+end.** `testpulseAnnotate` only matches a `<testcase>` to exactly one
+compiled method (see "v1 limitations" below), and a parameterized test's
+decorated invocation names never satisfy that exact match — so a
+parameterized test's case is never matched server-side, and any
+attachments registered from it are recorded locally but never delivered
+in a submission. Use `attach()` from a plain (non-parameterized)
+`@TestPulse`-annotated test for attachments that need to actually reach
+TestPulse today.
 
 ## Configure
 

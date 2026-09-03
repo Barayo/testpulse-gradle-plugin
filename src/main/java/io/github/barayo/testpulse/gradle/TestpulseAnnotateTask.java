@@ -93,7 +93,10 @@ public class TestpulseAnnotateTask extends DefaultTask {
             Document doc = JUnitReportAnnotator.newSecureDocumentBuilder().parse(reportPath.toFile());
             List<JUnitReportAnnotator.SkippedTestcase> skipped = annotator.annotateClass(doc, clazz);
             for (JUnitReportAnnotator.SkippedTestcase s : skipped) {
-                getLogger().info("testpulse-gradle-plugin: skipping {}#{} ({})", clazz.getName(), s.testcaseName, s.reason);
+                // lifecycle, not info -- info is invisible at Gradle's default log
+                // verbosity, which contradicted this project's own documented claim
+                // that "the build log names them" (caught during a real QA pass).
+                getLogger().lifecycle("testpulse-gradle-plugin: skipping {}#{} ({})", clazz.getName(), s.testcaseName, s.reason);
             }
             writeDocument(doc, reportPath);
         }

@@ -68,7 +68,6 @@ public class TestPulsePlugin implements Plugin<Project> {
                         task.getTestResultsDir().set(testResultsDir);
                         task.getAnnotatedCaseKeysFile().set(project.getLayout().getBuildDirectory().file("testpulse/annotated-case-keys.txt"));
                     });
-            annotateTask.dependsOn(testTask);
 
             TestpulseSubmitTask submitTask = project.getTasks().create(
                     "testpulseSubmit", TestpulseSubmitTask.class, task -> {
@@ -77,8 +76,20 @@ public class TestPulsePlugin implements Plugin<Project> {
                         task.getScratchDir().set(project.getLayout().getBuildDirectory().dir("testpulse"));
                         task.getExtension().set(extension);
                     });
-            submitTask.dependsOn(annotateTask);
 
+            // finalizedBy alone establishes both the ordering (runs after) AND the
+            // "runs regardless of outcome" guarantee -- deliberately NOT also declaring
+            // dependsOn here. A real QA pass found that dependsOn on a task that then
+            // fails causes Gradle to skip the dependent task entirely, silently
+            // overriding finalizedBy's own guarantee: a genuinely failing `test` task
+            // (the one time results matter most) meant testpulseAnnotate/testpulseSubmit
+            // never ran at all, and nothing was ever submitted. Confirmed via an isolated
+            // repro against real Gradle 8.10.2. The trade-off: running
+            // `./gradlew testpulseAnnotate` standalone, without `test` in the same
+            // invocation, no longer force-triggers `test` first -- same expectation
+            // Maven's own goal-only invocations already have (a bare `mvn testpulse:annotate`
+            // doesn't trigger the full lifecycle up to `test` either), and the documented,
+            // intended usage is always `./gradlew test`, never a standalone task name.
             testTask.finalizedBy(annotateTask);
             annotateTask.finalizedBy(submitTask);
         });

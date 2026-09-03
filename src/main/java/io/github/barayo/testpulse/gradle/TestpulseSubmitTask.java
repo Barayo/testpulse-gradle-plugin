@@ -12,14 +12,12 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Reads the annotated JUnit report(s) plus any registered attachments and
@@ -112,17 +110,7 @@ public class TestpulseSubmitTask extends DefaultTask {
     }
 
     private String readCombinedReport() throws Exception {
-        File dir = testResultsDir.get().getAsFile();
-        if (!dir.isDirectory()) {
-            return "";
-        }
-        StringBuilder combined = new StringBuilder();
-        try (Stream<Path> reports = Files.list(dir.toPath())) {
-            for (Path report : (Iterable<Path>) reports.filter(p -> p.toString().endsWith(".xml"))::iterator) {
-                combined.append(Files.readString(report, StandardCharsets.UTF_8));
-            }
-        }
-        return combined.toString();
+        return ReportCombiner.combine(testResultsDir.get().getAsFile().toPath());
     }
 
     private String requireSetting(String value, String name, String property, String envVar) {
