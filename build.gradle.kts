@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.github.barayo"
-version = "0.1.0"
+version = "1.0.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
