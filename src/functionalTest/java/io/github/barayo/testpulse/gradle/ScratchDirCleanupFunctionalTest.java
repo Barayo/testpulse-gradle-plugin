@@ -47,7 +47,10 @@ class ScratchDirCleanupFunctionalTest {
         // this test can't easily simulate "a test that no longer calls attach()"
         // without a second fixture, assert instead that a *fresh* run's attachment
         // count is exactly 1, not 2 -- proving the directory was cleared, not appended to.
-        FunctionalTestFixture.run(projectDir, "test");
+        // --rerun-tasks forces `test` to actually re-execute (and therefore attach()
+        // to actually re-run) rather than going UP-TO-DATE on identical inputs, which
+        // would make this assertion pass even if the doFirst cleanup were broken.
+        FunctionalTestFixture.run(projectDir, "test", "--rerun-tasks");
         long countAfterSecondRun;
         try (var entries = Files.list(attachmentsDir)) {
             countAfterSecondRun = entries.filter(p -> p.toString().endsWith(".data")).count();
