@@ -1,0 +1,12 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    ["@semantic-release/exec", {
+      "prepareCmd": "sed -i.bak 's/^version = \".*\"/version = \"${nextRelease.version}\"/' build.gradle.kts && rm build.gradle.kts.bak"
+    }],
+    ["@semantic-release/git", { "assets": ["build.gradle.kts"], "message": "chore(release): ${nextRelease.version}\n\n[skip ci]" }],
+    "@semantic-release/github"
+  ]
+}
